@@ -100,12 +100,27 @@ if not test_mode:
     splits = ['train', 'train_plain', 'val']
     if dataset not in ['ImageNet']:
         splits.append('test')
+    # data = {x: dataloader.load_data(data_root=data_root[dataset.rstrip('_LT')],
+    #                                 dataset=dataset, phase=split2phase(x), 
+    #                                 batch_size=training_opt['batch_size'],
+    #                                 sampler_dic=sampler_dic,
+    #                                 num_workers=training_opt['num_workers'])
+    #         for x in splits}
+    stage = 1
+    rank_k = 2
+    rand_strength = 30
+    if training_opt['phaseA'] is not True:
+        stage = 2
     data = {x: dataloader.load_data(data_root=data_root[dataset.rstrip('_LT')],
-                                    dataset=dataset, phase=split2phase(x), 
-                                    batch_size=training_opt['batch_size'],
-                                    sampler_dic=sampler_dic,
-                                    num_workers=training_opt['num_workers'])
-            for x in splits}
+                                dataset=dataset, phase=split2phase(x), 
+                                batch_size=training_opt['batch_size'],
+                                sampler_dic=sampler_dic,
+                                num_workers=training_opt['num_workers'], 
+                                stage = stage, 
+                                rank_k = rank_k,
+                                rand_strength=30
+                                )
+        for x in splits}
 
     training_model = model(config, data, test=False)
 
@@ -127,6 +142,14 @@ else:
     if args.knn or True:
         splits.append('train_plain')
 
+    # data = {x: dataloader.load_data(data_root=data_root[dataset.rstrip('_LT')],
+    #                                 dataset=dataset, phase=x,
+    #                                 batch_size=training_opt['batch_size'],
+    #                                 sampler_dic=None, 
+    #                                 test_open=test_open,
+    #                                 num_workers=training_opt['num_workers'],
+    #                                 shuffle=False)
+    #         for x in splits}
     data = {x: dataloader.load_data(data_root=data_root[dataset.rstrip('_LT')],
                                     dataset=dataset, phase=x,
                                     batch_size=training_opt['batch_size'],
