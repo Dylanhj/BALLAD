@@ -6,7 +6,7 @@ import numpy as np
 import torchvision
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
 from torchvision import transforms
-from BCL.randaug import *
+from .BCL.randaug import *
 import os
 from PIL import Image
 import io
@@ -112,11 +112,11 @@ def get_data_transform(split, rgb_mean, rbg_std, key='default'):
 
 class LT_Dataset(Dataset):
 
-    def __init__(self, root, txt, stage=1, rank_k=1, rand_strength=0, transform=None, mode="train"):
+    def __init__(self, root, txt, stage=1, rank_k=1, rand_strength=0, class_num = 1000, transform=None, mode="train"):
         self.img_path = []
         self.labels = []
         self.transform = transform
-        class_num = 100
+        self.class_num = class_num
         self.idxsNumPerClass = [0] * class_num
         idx_num = 0
         with open(txt) as f:
@@ -160,8 +160,8 @@ class LT_Dataset(Dataset):
             if self.rank_k == 1:
                 min_strength = 10 # training stability
                 memo_boosted_aug = transforms.Compose([
-                        transforms.RandomResizedCrop(32, scale=(0.1, 1.0), interpolation=3),
-                        transforms.RandomHorizontalFlip(),
+                        transforms.RandomResizedCrop(224, scale=(0.5, 1.0), interpolation=BICUBIC),
+                        transforms.RandomHorizontalFlip(p=0.5),
                         transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
                         transforms.RandomGrayscale(p=0.2),
                         RandAugment_prob(self.rand_k, min_strength + (self.args.rand_strength - min_strength)*self.momentum_weight[idx], 1.0*self.momentum_weight[idx]),
@@ -177,6 +177,7 @@ class LT_Dataset(Dataset):
                         RandAugment_prob(self.rand_k, min_strength + (self.args.rand_strength - min_strength)*self.momentum_weight[idx]*np.random.rand(1), 1.0*self.momentum_weight[idx]),
                         transforms.ToTensor(),
                     ])
+            print(memo_boosted_aug)
             sample = memo_boosted_aug(sample)
         else:
             if self.transform is not None:
@@ -187,7 +188,7 @@ class LT_Dataset(Dataset):
 # Load datasets
 
 
-def load_data(data_root, dataset, phase, batch_size, sampler_dic=None, num_workers=4, test_open=False, shuffle=True, stage=1, rank_k=1, rand_strength=0):
+def load_data(data_root, dataset, phase, batch_size, sampler_dic=None, num_workers=4, test_open=False, shuffle=True, stage=1, rank_k=1, rand_strength=0, class_num=1000):
 
     if phase == 'train_plain':
         txt_split = 'train'
@@ -211,7 +212,7 @@ def load_data(data_root, dataset, phase, batch_size, sampler_dic=None, num_worke
 
     print('Use data transformation:', transform)
 
-    set_ = LT_Dataset(data_root, txt, stage, rank_k, rand_strength, transform)
+    set_ = LT_Dataset(data_root, txt, stage, rank_k, rand_strength, class_num, transform)
     print(len(set_))
     if phase == 'test' and test_open:
         open_txt = './data/%s/%s_open.txt' % (dataset, dataset)

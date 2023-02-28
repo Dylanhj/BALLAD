@@ -109,6 +109,7 @@ if not test_mode:
     stage = 1
     rank_k = 2
     rand_strength = 30
+    class_num = training_opt['num_classes']
     if training_opt['phaseA'] is not True:
         stage = 2
     data = {x: dataloader.load_data(data_root=data_root[dataset.rstrip('_LT')],
@@ -118,7 +119,8 @@ if not test_mode:
                                 num_workers=training_opt['num_workers'], 
                                 stage = stage, 
                                 rank_k = rank_k,
-                                rand_strength=30
+                                rand_strength=rand_strength,
+                                class_num=class_num
                                 )
         for x in splits}
 
