@@ -6,6 +6,7 @@ from train import model
 import warnings
 import yaml
 from utils import source_import, get_value
+from data.BCL import mono_imagnet
 
 ##change your data root here
 data_root = {'ImageNet': './datasets/ImageNet/',
@@ -152,6 +153,7 @@ else:
     #                                 num_workers=training_opt['num_workers'],
     #                                 shuffle=False)
     #         for x in splits}
+    
     data = {x: dataloader.load_data(data_root=data_root[dataset.rstrip('_LT')],
                                     dataset=dataset, phase=x,
                                     batch_size=training_opt['batch_size'],

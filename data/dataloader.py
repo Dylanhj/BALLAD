@@ -112,7 +112,7 @@ def get_data_transform(split, rgb_mean, rbg_std, key='default'):
 
 class LT_Dataset(Dataset):
 
-    def __init__(self, root, txt, stage=1, rank_k=1, rand_strength=0, class_num = 1000, transform=None, mode="train"):
+    def __init__(self, root, txt, stage=1, rank_k=1, rand_strength=0, class_num = 1000, transform=None, mode="train", idx=0):
         self.img_path = []
         self.labels = []
         self.transform = transform
@@ -162,18 +162,18 @@ class LT_Dataset(Dataset):
                 memo_boosted_aug = transforms.Compose([
                         transforms.RandomResizedCrop(224, scale=(0.5, 1.0), interpolation=BICUBIC),
                         transforms.RandomHorizontalFlip(p=0.5),
-                        transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
-                        transforms.RandomGrayscale(p=0.2),
+                        # transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
+                        # transforms.RandomGrayscale(p=0.2),
                         RandAugment_prob(self.rand_k, min_strength + (self.args.rand_strength - min_strength)*self.momentum_weight[idx], 1.0*self.momentum_weight[idx]),
                         transforms.ToTensor(),
                     ])
             else:
                 min_strength = 5 # training stability
                 memo_boosted_aug = transforms.Compose([
-                        transforms.RandomResizedCrop(32, scale=(0.1, 1.0), interpolation=3),
-                        transforms.RandomHorizontalFlip(),
-                        transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
-                        transforms.RandomGrayscale(p=0.2),
+                        transforms.RandomResizedCrop(224, scale=(0.5, 1.0), interpolation=BICUBIC),
+                        transforms.RandomHorizontalFlip(p=0.5),
+                        # transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
+                        # transforms.RandomGrayscale(p=0.2),
                         RandAugment_prob(self.rand_k, min_strength + (self.args.rand_strength - min_strength)*self.momentum_weight[idx]*np.random.rand(1), 1.0*self.momentum_weight[idx]),
                         transforms.ToTensor(),
                     ])
